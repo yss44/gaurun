@@ -20,7 +20,7 @@ type RequestGaurunNotification struct {
 	// Common
 	Tokens   []string `json:"token"`
 	Platform int      `json:"platform"`
-	Message  string   `json:"message"`
+	Message  string   `json:"message,omitempty"`
 	// Android
 	CollapseKey    string `json:"collapse_key,omitempty"`
 	DelayWhileIdle bool   `json:"delay_while_idle,omitempty"`
@@ -30,6 +30,7 @@ type RequestGaurunNotification struct {
 	Sound  string       `json:"sound,omitempty"`
 	Expiry int          `json:"expiry,omitempty"`
 	Retry  int          `json:"retry,omitempty"`
+	ContentAvailable int `json:"content-available,omitempty"`
 	Extend []ExtendJSON `json:"extend,omitempty"`
 	// meta
 	IDs []uint64 `json:"seq_id,omitempty"`
@@ -113,6 +114,7 @@ func pushNotificationIos(req RequestGaurunNotification, client *apns.Client) boo
 		payload.Alert = req.Message
 		payload.Badge = req.Badge
 		payload.Sound = req.Sound
+		payload.ContentAvailable = req.ContentAvailable
 
 		pn := apns.NewPushNotification()
 		pn.DeviceToken = token
@@ -286,7 +288,7 @@ func validateNotification(notification *RequestGaurunNotification) error {
 		return errors.New("invalid platform")
 	}
 
-	if len(notification.Message) == 0 {
+	if len(notification.Message) == 0 && notification.ContentAvailable != 1 {
 		return errors.New("empty message")
 	}
 
